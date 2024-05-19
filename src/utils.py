@@ -23,7 +23,9 @@ def save_object(file_path, obj):
     
 def evaluate_models(X_train, y_train,X_test,y_test,models,param):
     try:
-        report = {}
+        report = {'training':dict(),
+                  'testing':dict(),
+                  'hyperparameters':dict()}
 
         for i in range(len(list(models))):
             model = list(models.values())[i]
@@ -31,8 +33,9 @@ def evaluate_models(X_train, y_train,X_test,y_test,models,param):
 
             gs = GridSearchCV(model,para,cv=3)
             gs.fit(X_train,y_train)
+            best_hyperparameters = gs.best_params_
 
-            model.set_params(**gs.best_params_)
+            model.set_params(**best_hyperparameters)
             model.fit(X_train,y_train)
 
             #model.fit(X_train, y_train)  # Train model
@@ -45,8 +48,10 @@ def evaluate_models(X_train, y_train,X_test,y_test,models,param):
 
             test_model_score = r2_score(y_test, y_test_pred)
 
-            report[list(models.keys())[i]] = test_model_score
-
+            report['training'][f'{list(models.keys())[i]}'] = train_model_score
+            report['testing'][f'{list(models.keys())[i]}'] = test_model_score
+            report['hyperparameters'][f'{list(models.keys())[i]}'] = best_hyperparameters
+            
         return report
 
     except Exception as e:
